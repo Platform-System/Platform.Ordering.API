@@ -3,6 +3,7 @@ using Platform.Application.Messaging;
 using Platform.BuildingBlocks.Responses;
 using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Ordering.API.Application.Features.Carts.Shared;
+using Platform.Ordering.API.Domain.Entities;
 using Platform.Ordering.API.Infrastructure.Persistence.Models;
 using Platform.SharedKernel.Enums;
 using Platform.SystemContext.Abstractions;
@@ -28,16 +29,12 @@ public sealed class AddToCartHandler : ICommandHandler<AddToCartCommand, CartRes
             return Result<CartResponse>.Failure("Unauthorized.");
 
         var cartRepository = _unitOfWork.GetRepository<CartModel>();
-        var cart = await cartRepository.FindAsync(
+        var cartModel = await cartRepository.FindAsync(
             x => x.UserId == userId,
             false,
             cancellationToken,
             x => x.Items);
-
-        cart ??= new CartModel
-        {
-            UserId = userId
-        };
+        var cart = cartModel?.ToDomain() ?? new Cart(userId);
 
         // Ordering lấy snapshot product từ Catalog qua gRPC rồi mới áp
         // rule thêm vào giỏ hàng, thay vì đọc dữ liệu product trực tiếp từ DB khác.
@@ -73,7 +70,9 @@ public sealed class AddToCartHandler : ICommandHandler<AddToCartCommand, CartRes
             if (product.Stock.HasValue && existingItem.Quantity + command.Request.Quantity > product.Stock.Value)
                 return Result<CartResponse>.Failure("Not enough stock available.");
 
-            existingItem.Quantity += command.Request.Quantity;
+            var addItemResult = cart.AddItem(product.Id, product.Type, product.Title, product.Price, command.Request.Quantity);
+            if (addItemResult.IsFailure)
+                return Result<CartResponse>.Failure(addItemResult.Error.Message);
         }
         else
         {
@@ -83,15 +82,21 @@ public sealed class AddToCartHandler : ICommandHandler<AddToCartCommand, CartRes
             if (product.Stock.HasValue && command.Request.Quantity > product.Stock.Value)
                 return Result<CartResponse>.Failure("Not enough stock available.");
 
-            cart.Items.Add(product.ToModel(command.Request.Quantity));
+            var addItemResult = cart.AddItem(product.Id, product.Type, product.Title, product.Price, command.Request.Quantity);
+            if (addItemResult.IsFailure)
+                return Result<CartResponse>.Failure(addItemResult.Error.Message);
         }
 
-        if (cart.Id == Guid.Empty)
-            await cartRepository.AddAsync(cart, cancellationToken);
+        if (cartModel is null)
+        {
+            cartModel = cart.ToModel();
+            await cartRepository.AddAsync(cartModel, cancellationToken);
+        }
         else
-            cartRepository.Update(cart);
+        {
+            cart.UpdateModel(cartModel);
+        }
 
-        var domainCart = cart.ToDomain();
-        return Result<CartResponse>.Success(domainCart.ToResponse());
+        return Result<CartResponse>.Success(cart.ToResponse());
     }
 }

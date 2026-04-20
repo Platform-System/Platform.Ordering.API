@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace Platform.Ordering.API.Application.Features.Carts.Commands.Add;
 
-public sealed class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
+public sealed class AddToCartValidator : AbstractValidator<AddToCartCommand>
 {
-    public AddToCartCommandValidator()
+    public AddToCartValidator()
     {
         RuleFor(x => x.Request.ProductId)
             .NotEmpty()
