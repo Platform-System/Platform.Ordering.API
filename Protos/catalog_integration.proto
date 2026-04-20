@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package catalogintegration;
+
+option csharp_namespace = "Platform.Catalog.Grpc";
+
+service CatalogIntegration {
+  rpc GetProductCartSnapshot (GetProductCartSnapshotRequest) returns (GetProductCartSnapshotResponse);
+}
+
+message GetProductCartSnapshotRequest {
+  string product_id = 1;
+}
+
+enum ProductKindGrpc {
+  PRODUCT_KIND_GRPC_UNSPECIFIED = 0;
+  PRODUCT_KIND_GRPC_DIGITAL = 1;
+  PRODUCT_KIND_GRPC_PHYSICAL = 2;
+}
+
+enum CatalogErrorCodeGrpc {
+  CATALOG_ERROR_CODE_GRPC_UNSPECIFIED = 0;
+  CATALOG_ERROR_CODE_GRPC_INVALID_PRODUCT_ID = 1;
+  CATALOG_ERROR_CODE_GRPC_PRODUCT_NOT_FOUND = 2;
+}
+
+message GetProductCartSnapshotResponse {
+  bool is_success = 1;
+  CatalogErrorCodeGrpc error_code = 2;
+  string error_message = 3;
+  string id = 4;
+  string title = 5;
+  int64 price = 6;
+  ProductKindGrpc kind = 7;
+  bool is_active = 8;
+  bool has_stock = 9;
+  int32 stock = 10;
+}
