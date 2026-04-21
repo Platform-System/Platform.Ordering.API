@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Platform.BuildingBlocks.Responses;
 using Platform.Ordering.API.Application.Features.Carts.Commands.Add;
+using Platform.Ordering.API.Application.Features.Carts.Commands.Update;
 
 namespace Platform.Ordering.API.Presentation;
 
@@ -22,6 +23,14 @@ public sealed class CartsController : ControllerBase
     public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request, CancellationToken cancellation)
     {
         var command = new AddToCartCommand(request);
+        var result = await _mediator.Send(command, cancellation);
+        return result.ToActionResult();
+    }
+
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemRequest request, CancellationToken cancellation)
+    {
+        var command = new UpdateCartItemCommand(request);
         var result = await _mediator.Send(command, cancellation);
         return result.ToActionResult();
     }

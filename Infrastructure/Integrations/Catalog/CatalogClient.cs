@@ -38,8 +38,10 @@ public sealed class CatalogClient : ICatalogClient
                 },
                 cancellationToken: token);
 
-        // mapResponse đổi response gRPC thuần sang IntegrationResult<ProductCartSnapshot>
-        // để application layer không phải làm việc trực tiếp với gRPC DTO.
+        // mapResponse dùng để đổi kiểu dữ liệu:
+        // - trước map: GetProductCartSnapshotResponse (DTO gRPC từ Catalog)
+        // - sau map: IntegrationResult<ProductCartSnapshot> (kiểu Ordering dùng)
+        // Nhờ vậy application layer không phải làm việc trực tiếp với gRPC DTO.
         Func<GetProductCartSnapshotResponse, IntegrationResult<ProductCartSnapshot>> mapResponse =
             response => response.ToProductCartSnapshotResult();
 
