@@ -53,4 +53,35 @@ public sealed class CatalogClient : ICatalogClient
             mapResponse,
             cancellationToken);
     }
+
+    public async Task<IntegrationResult<bool>> DecreaseStockAsync(IEnumerable<StockDeductionItem> items, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(_options.Address))
+        {
+            return IntegrationResult<bool>.Failure(
+                IntegrationErrorType.InvalidConfiguration,
+                $"{CatalogIntegrationDefinition.Name} integration address is not configured.");
+        }
+
+        Func<CancellationToken, Task<DecreaseStockResponse>> operation = async token =>
+            await _client.DecreaseStockAsync(
+                new DecreaseStockRequest
+                {
+                    Items = { items.Select(item => new DecreaseStockItem
+                    {
+                        ProductId = item.ProductId.ToString(),
+                        Quantity = item.Quantity
+                    }) }
+                },
+                cancellationToken: token);
+
+        Func<DecreaseStockResponse, IntegrationResult<bool>> mapResponse =
+            response => response.ToDecreaseStockResult();
+
+        return await GrpcIntegrationExecutor.ExecuteAsync(
+            CatalogIntegrationDefinition.Name,
+            operation,
+            mapResponse,
+            cancellationToken);
+    }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Platform.BuildingBlocks.Responses;
 using Platform.Ordering.API.Application.Features.Carts.Commands.Add;
+using Platform.Ordering.API.Application.Features.Carts.Commands.Checkout;
 using Platform.Ordering.API.Application.Features.Carts.Commands.Remove;
 using Platform.Ordering.API.Application.Features.Carts.Commands.Update;
 
@@ -40,6 +41,14 @@ public sealed class CartsController : ControllerBase
     public async Task<IActionResult> RemoveCartItem([FromBody] RemoveCartItemRequest request, CancellationToken cancellation)
     {
         var command = new RemoveCartItemCommand(request);
+        var result = await _mediator.Send(command, cancellation);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("checkout")]
+    public async Task<IActionResult> Checkout(CancellationToken cancellation)
+    {
+        var command = new CheckoutCartCommand();
         var result = await _mediator.Send(command, cancellation);
         return result.ToActionResult();
     }
