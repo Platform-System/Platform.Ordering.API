@@ -40,7 +40,7 @@ public static class CatalogIntegrationMapper
         });
     }
 
-    public static IntegrationResult<bool> ToDecreaseStockResult(this DecreaseStockResponse response)
+    public static IntegrationResult<bool> ToAdjustStockResult(this AdjustStockResponse response)
     {
         if (!response.IsSuccess)
         {

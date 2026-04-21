@@ -1,7 +1,7 @@
 using Platform.Application.Abstractions.Data;
-using Platform.Application.Abstractions.Payments;
 using Platform.Application.Messaging;
 using Platform.BuildingBlocks.Responses;
+using Platform.Ordering.API.Application.Abstractions.Payments;
 using Platform.Ordering.API.Application.Features.Orders.Shared;
 using Platform.Ordering.API.Domain.Entities;
 using Platform.Ordering.API.Domain.Enums;
@@ -52,16 +52,13 @@ public sealed class CheckoutOrderHandler : ICommandHandler<CheckoutOrderCommand,
             return Result<OrderResponse>.Failure("Order cancelled.");
 
         var existingPaymentModel = await paymentRepository.FindAsync(
-            x => x.OrderId == order.Id,
+            x => x.OrderId == order.Id && x.Status == PaymentStatus.Pending,
             false,
             cancellationToken);
 
         if (existingPaymentModel is not null)
         {
             var existingPayment = existingPaymentModel.ToDomain();
-
-            if (existingPayment.Status == PaymentStatus.Paid)
-                return Result<OrderResponse>.Failure("Order already paid.");
 
             if (!string.IsNullOrWhiteSpace(existingPayment.CheckoutUrl))
                 return Result<OrderResponse>.Success(order.ToResponse(existingPayment.CheckoutUrl));
@@ -70,7 +67,7 @@ public sealed class CheckoutOrderHandler : ICommandHandler<CheckoutOrderCommand,
         var payment = existingPaymentModel?.ToDomain() ?? new Payment(order.Id);
         var addPaymentResult = order.AddPayment(payment);
         if (addPaymentResult.IsFailure)
-            return Result<OrderResponse>.Failure(addPaymentResult.Error.Message);
+            return Result<OrderResponse>.Failure("Unable to attach payment to order.");
 
         var paymentLink = await _paymentService.CreatePaymentLink(order, cancellationToken);
 
@@ -88,7 +85,7 @@ public sealed class CheckoutOrderHandler : ICommandHandler<CheckoutOrderCommand,
             paymentLink.Currency);
 
         if (setCheckoutResult.IsFailure)
-            return Result<OrderResponse>.Failure(setCheckoutResult.Error.Message);
+            return Result<OrderResponse>.Failure("Unable to update payment checkout information.");
 
         if (existingPaymentModel is null)
         {

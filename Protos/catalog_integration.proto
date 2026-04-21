@@ -6,7 +6,8 @@ option csharp_namespace = "Platform.Catalog.Grpc";
 
 service CatalogIntegration {
   rpc GetProductCartSnapshot (GetProductCartSnapshotRequest) returns (GetProductCartSnapshotResponse);
-  rpc DecreaseStock (DecreaseStockRequest) returns (DecreaseStockResponse);
+  rpc DecreaseStock (AdjustStockRequest) returns (AdjustStockResponse);
+  rpc RestoreStock (AdjustStockRequest) returns (AdjustStockResponse);
 }
 
 message GetProductCartSnapshotRequest {
@@ -40,16 +41,16 @@ message GetProductCartSnapshotResponse {
   int32 stock = 10;
 }
 
-message DecreaseStockItem {
+message StockAdjustmentItem {
   string product_id = 1;
   int32 quantity = 2;
 }
 
-message DecreaseStockRequest {
-  repeated DecreaseStockItem items = 1;
+message AdjustStockRequest {
+  repeated StockAdjustmentItem items = 1;
 }
 
-message DecreaseStockResponse {
+message AdjustStockResponse {
   bool is_success = 1;
   CatalogErrorCodeGrpc error_code = 2;
   string error_message = 3;

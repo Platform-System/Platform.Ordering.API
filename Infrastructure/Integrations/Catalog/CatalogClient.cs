@@ -2,6 +2,8 @@ using Microsoft.Extensions.Options;
 using Platform.BuildingBlocks.Responses;
 using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Catalog.Grpc;
+using CatalogStockAdjustmentItem = Platform.Catalog.Grpc.StockAdjustmentItem;
+using IntegrationStockAdjustmentItem = Platform.Ordering.API.Application.Abstractions.Integrations.Catalog.StockAdjustmentItem;
 
 namespace Platform.Ordering.API.Infrastructure.Integrations.Catalog;
 
@@ -54,7 +56,26 @@ public sealed class CatalogClient : ICatalogClient
             cancellationToken);
     }
 
-    public async Task<IntegrationResult<bool>> DecreaseStockAsync(IEnumerable<StockDeductionItem> items, CancellationToken cancellationToken)
+    public async Task<IntegrationResult<bool>> DecreaseStockAsync(IEnumerable<IntegrationStockAdjustmentItem> items, CancellationToken cancellationToken)
+    {
+        return await ExecuteAdjustStockAsync(
+            items,
+            (request, token) => _client.DecreaseStockAsync(request, cancellationToken: token).ResponseAsync,
+            cancellationToken);
+    }
+
+    public async Task<IntegrationResult<bool>> RestoreStockAsync(IEnumerable<IntegrationStockAdjustmentItem> items, CancellationToken cancellationToken)
+    {
+        return await ExecuteAdjustStockAsync(
+            items,
+            (request, token) => _client.RestoreStockAsync(request, cancellationToken: token).ResponseAsync,
+            cancellationToken);
+    }
+
+    private async Task<IntegrationResult<bool>> ExecuteAdjustStockAsync(
+        IEnumerable<IntegrationStockAdjustmentItem> items,
+        Func<AdjustStockRequest, CancellationToken, Task<AdjustStockResponse>> operation,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(_options.Address))
         {
@@ -63,25 +84,22 @@ public sealed class CatalogClient : ICatalogClient
                 $"{CatalogIntegrationDefinition.Name} integration address is not configured.");
         }
 
-        Func<CancellationToken, Task<DecreaseStockResponse>> operation = async token =>
-            await _client.DecreaseStockAsync(
-                new DecreaseStockRequest
+        var request = new AdjustStockRequest
+        {
+            Items =
+            {
+                items.Select(item => new CatalogStockAdjustmentItem
                 {
-                    Items = { items.Select(item => new DecreaseStockItem
-                    {
-                        ProductId = item.ProductId.ToString(),
-                        Quantity = item.Quantity
-                    }) }
-                },
-                cancellationToken: token);
-
-        Func<DecreaseStockResponse, IntegrationResult<bool>> mapResponse =
-            response => response.ToDecreaseStockResult();
+                    ProductId = item.ProductId.ToString(),
+                    Quantity = item.Quantity
+                })
+            }
+        };
 
         return await GrpcIntegrationExecutor.ExecuteAsync(
             CatalogIntegrationDefinition.Name,
-            operation,
-            mapResponse,
+            token => operation(request, token),
+            response => response.ToAdjustStockResult(),
             cancellationToken);
     }
 }

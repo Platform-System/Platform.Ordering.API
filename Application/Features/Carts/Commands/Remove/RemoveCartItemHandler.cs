@@ -41,7 +41,7 @@ public sealed class RemoveCartItemHandler : ICommandHandler<RemoveCartItemComman
 
         var removeResult = cart.RemoveItem(existingItem.ProductId, existingItem.Type);
         if (removeResult.IsFailure)
-            return Result<CartResponse>.Failure(removeResult.Error.Message);
+            return Result<CartResponse>.Failure("Unable to remove item from cart.");
 
         cart.UpdateModel(cartModel);
 

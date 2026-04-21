@@ -50,7 +50,7 @@ public sealed class UpdateCartItemHandler : ICommandHandler<UpdateCartItemComman
         {
             var removeResult = cart.RemoveItem(existingItem.ProductId, existingItem.Type);
             if (removeResult.IsFailure)
-                return Result<CartResponse>.Failure(removeResult.Error.Message);
+                return Result<CartResponse>.Failure("Unable to remove item from cart.");
 
             cart.UpdateModel(cartModel);
             return Result<CartResponse>.Success(cart.ToResponse());
@@ -81,7 +81,7 @@ public sealed class UpdateCartItemHandler : ICommandHandler<UpdateCartItemComman
 
         var updateResult = cart.UpdateItem(product.Id, product.Type, command.Request.NewQuantity);
         if (updateResult.IsFailure)
-            return Result<CartResponse>.Failure(updateResult.Error.Message);
+            return Result<CartResponse>.Failure("Unable to update cart item.");
 
         cart.UpdateModel(cartModel);
 

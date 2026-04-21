@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using Platform.BuildingBlocks.Responses;
 using Platform.Ordering.API.Application.Features.Orders.Commands.Checkout;
+using Platform.Ordering.API.Application.Features.Orders.Commands.Webhook;
 
 namespace Platform.Ordering.API.Presentation;
 
@@ -24,5 +25,21 @@ public sealed class OrdersController : ControllerBase
         var command = new CheckoutOrderCommand(orderCode);
         var result = await _mediator.Send(command, cancellationToken);
         return result.ToActionResult();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("webhook")]
+    public async Task<IActionResult> Webhook(CancellationToken cancellationToken)
+    {
+        using var reader = new StreamReader(Request.Body);
+        var rawBody = await reader.ReadToEndAsync(cancellationToken);
+
+        var command = new ProcessWebhookCommand(new WebhookRequest
+        {
+            RawBody = rawBody
+        });
+
+        await _mediator.Send(command, cancellationToken);
+        return Ok();
     }
 }

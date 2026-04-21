@@ -72,7 +72,7 @@ public sealed class AddToCartHandler : ICommandHandler<AddToCartCommand, CartRes
 
             var addItemResult = cart.AddItem(product.Id, product.Type, product.Title, product.Price, command.Request.Quantity);
             if (addItemResult.IsFailure)
-                return Result<CartResponse>.Failure(addItemResult.Error.Message);
+                return Result<CartResponse>.Failure("Unable to add item to cart.");
         }
         else
         {
@@ -84,7 +84,7 @@ public sealed class AddToCartHandler : ICommandHandler<AddToCartCommand, CartRes
 
             var addItemResult = cart.AddItem(product.Id, product.Type, product.Title, product.Price, command.Request.Quantity);
             if (addItemResult.IsFailure)
-                return Result<CartResponse>.Failure(addItemResult.Error.Message);
+                return Result<CartResponse>.Failure("Unable to add item to cart.");
         }
 
         if (cartModel is null)

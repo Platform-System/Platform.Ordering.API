@@ -49,7 +49,7 @@ public sealed class CheckoutCartHandler : ICommandHandler<CheckoutCartCommand, O
 
         // Checkout không đụng thẳng CatalogDb. Ordering chỉ gửi danh sách cần trừ kho
         // sang Catalog để service sở hữu dữ liệu stock tự xử lý.
-        var decreaseStockItems = cart.Items.Select(item => new StockDeductionItem
+        var decreaseStockItems = cart.Items.Select(item => new StockAdjustmentItem
         {
             ProductId = item.ProductId,
             Quantity = item.Quantity
@@ -75,7 +75,7 @@ public sealed class CheckoutCartHandler : ICommandHandler<CheckoutCartCommand, O
         {
             var addItemResult = order.AddItem(cartItem.ProductId, cartItem.Type, cartItem.Name, cartItem.Price, cartItem.Quantity);
             if (addItemResult.IsFailure)
-                return Result<OrderResponse>.Failure(addItemResult.Error.Message);
+                return Result<OrderResponse>.Failure("Unable to create order item.");
         }
 
         await orderRepository.AddAsync(order.ToModel(), cancellationToken);
