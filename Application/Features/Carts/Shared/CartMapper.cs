@@ -1,5 +1,4 @@
 using Platform.Ordering.API.Domain.Entities;
-using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Ordering.API.Infrastructure.Persistence.Models;
 
 namespace Platform.Ordering.API.Application.Features.Carts.Shared;
