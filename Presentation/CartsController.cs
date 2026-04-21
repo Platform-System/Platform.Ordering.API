@@ -6,6 +6,7 @@ using Platform.Ordering.API.Application.Features.Carts.Commands.Add;
 using Platform.Ordering.API.Application.Features.Carts.Commands.Checkout;
 using Platform.Ordering.API.Application.Features.Carts.Commands.Remove;
 using Platform.Ordering.API.Application.Features.Carts.Commands.Update;
+using Platform.Ordering.API.Application.Features.Carts.Queries.GetCartByUserId;
 
 namespace Platform.Ordering.API.Presentation;
 
@@ -19,6 +20,14 @@ public sealed class CartsController : ControllerBase
     public CartsController(ISender mediator)
     {
         _mediator = mediator;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetCart(CancellationToken cancellation)
+    {
+        var query = new GetCartByUserIdQuery();
+        var result = await _mediator.Send(query, cancellation);
+        return result.ToActionResult();
     }
 
     [HttpPost("add")]
