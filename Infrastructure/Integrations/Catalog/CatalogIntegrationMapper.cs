@@ -39,28 +39,4 @@ public static class CatalogIntegrationMapper
             Stock = response.HasStock ? response.Stock : null
         });
     }
-
-    public static IntegrationResult<bool> ToDecreaseStockResult(this DecreaseStockResponse response)
-    {
-        if (!response.IsSuccess)
-        {
-            return response.ErrorCode switch
-            {
-                CatalogErrorCodeGrpc.ProductNotFound => IntegrationResult<bool>.Failure(
-                    IntegrationErrorType.NotFound,
-                    response.ErrorMessage ?? "Product not found."),
-                CatalogErrorCodeGrpc.InvalidQuantity => IntegrationResult<bool>.Failure(
-                    IntegrationErrorType.Unknown,
-                    response.ErrorMessage ?? "Invalid quantity."),
-                CatalogErrorCodeGrpc.InsufficientStock => IntegrationResult<bool>.Failure(
-                    IntegrationErrorType.Unknown,
-                    response.ErrorMessage ?? "Not enough stock available."),
-                _ => IntegrationResult<bool>.Failure(
-                    IntegrationErrorType.Unknown,
-                    response.ErrorMessage ?? "Catalog integration failed.")
-            };
-        }
-
-        return IntegrationResult<bool>.Success(true);
-    }
 }
