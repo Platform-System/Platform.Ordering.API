@@ -10,5 +10,6 @@ public sealed class OrderResponse
     public long TotalAmount { get; set; }
     public DateTime ExpiredAt { get; set; }
     public OrderStatus Status { get; set; }
+    public string? CheckoutUrl { get; set; }
     public List<OrderItemResponse> Items { get; set; } = [];
 }

@@ -25,6 +25,29 @@ public sealed class Payment : AggregateRoot
         Status = PaymentStatus.Pending;
     }
 
+    public static Payment Load(
+        Guid id,
+        Guid orderId,
+        string? paymentLinkId,
+        string? checkoutUrl,
+        long amount,
+        string? currency,
+        DateTime? paidAt,
+        PaymentStatus status)
+    {
+        return new Payment
+        {
+            Id = id,
+            OrderId = orderId,
+            PaymentLinkId = paymentLinkId,
+            CheckoutUrl = checkoutUrl,
+            Amount = amount,
+            Currency = currency,
+            PaidAt = paidAt,
+            Status = status
+        };
+    }
+
     public DomainResult MarkAsPaid()
     {
         if (Status != PaymentStatus.Pending)

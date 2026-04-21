@@ -3,10 +3,13 @@ using Microsoft.Extensions.Options;
 using Platform.Catalog.Grpc;
 using Platform.Infrastructure.Data;
 using Platform.Infrastructure.DependencyInjection;
+using Platform.Ordering.API.Application.Abstractions.Payments;
+using Platform.Ordering.API.Infrastructure.Configurations;
 using Platform.Ordering.API.Infrastructure.Constants;
 using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Ordering.API.Infrastructure.Data;
 using Platform.Ordering.API.Infrastructure.Integrations.Catalog;
+using Platform.Ordering.API.Infrastructure.Services;
 using Platform.SystemContext.DependencyInjection;
 using StackExchange.Redis;
 
@@ -41,6 +44,18 @@ public static class DependencyInjection
                     : catalogOptions.Address);
         });
         services.AddScoped<ICatalogClient, CatalogClient>();
+        services.AddScoped<IPaymentService, PayOSService>();
+        services.AddOptions<PayOSClientOptions>()
+            .Bind(configuration.GetSection(ConfigurationSections.PayOS))
+            .Validate(s => !string.IsNullOrWhiteSpace(s.ClientId), ConfigurationValidationMessages.PayOSClientIdRequired)
+            .Validate(s => !string.IsNullOrWhiteSpace(s.ApiKey), ConfigurationValidationMessages.PayOSApiKeyRequired)
+            .Validate(s => !string.IsNullOrWhiteSpace(s.ChecksumKey), ConfigurationValidationMessages.PayOSChecksumKeyRequired)
+            .ValidateOnStart();
+        services.AddOptions<PaymentSettings>()
+            .Bind(configuration.GetSection(ConfigurationSections.Payment))
+            .Validate(s => !string.IsNullOrWhiteSpace(s.ReturnUrl), ConfigurationValidationMessages.PaymentReturnUrlRequired)
+            .Validate(s => !string.IsNullOrWhiteSpace(s.CancelUrl), ConfigurationValidationMessages.PaymentCancelUrlRequired)
+            .ValidateOnStart();
 
         return services;
     }

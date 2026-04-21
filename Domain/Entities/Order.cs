@@ -32,6 +32,19 @@ public sealed class Order : AggregateRoot
         Status = OrderStatus.Pending;
     }
 
+    public static Order Load(Guid id, Guid userId, long orderCode, long totalAmount, DateTime expiredAt, OrderStatus status)
+    {
+        return new Order
+        {
+            Id = id,
+            UserId = userId,
+            OrderCode = orderCode,
+            TotalAmount = totalAmount,
+            ExpiredAt = expiredAt,
+            Status = status
+        };
+    }
+
     public DomainResult AddItem(Guid productId, ProductKind type, string name, long price, int quantity)
     {
         if (string.IsNullOrWhiteSpace(name))
