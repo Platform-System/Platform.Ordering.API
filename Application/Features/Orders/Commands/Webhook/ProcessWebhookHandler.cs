@@ -2,6 +2,8 @@ using MediatR;
 using Platform.Application.Abstractions.Data;
 using Platform.Application.Messaging;
 using Platform.BuildingBlocks.Responses;
+using Platform.Contracts.Messages.Emails;
+using Platform.Messaging.Abstractions;
 using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Ordering.API.Application.Abstractions.Payments;
 using Platform.Ordering.API.Application.Features.Orders.Shared;
@@ -13,12 +15,18 @@ namespace Platform.Ordering.API.Application.Features.Orders.Commands.Webhook;
 public sealed class ProcessWebhookHandler : ICommandHandler<ProcessWebhookCommand>
 {
     private readonly ICatalogClient _catalogClient;
+    private readonly IMessagePublisher _messagePublisher;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPaymentService _paymentService;
 
-    public ProcessWebhookHandler(ICatalogClient catalogClient, IUnitOfWork unitOfWork, IPaymentService paymentService)
+    public ProcessWebhookHandler(
+        ICatalogClient catalogClient,
+        IMessagePublisher messagePublisher,
+        IUnitOfWork unitOfWork,
+        IPaymentService paymentService)
     {
         _catalogClient = catalogClient;
+        _messagePublisher = messagePublisher;
         _unitOfWork = unitOfWork;
         _paymentService = paymentService;
     }
@@ -89,6 +97,25 @@ public sealed class ProcessWebhookHandler : ICommandHandler<ProcessWebhookComman
 
         paymentModel.ApplyDomainState(payment);
         orderModel.Status = order.Status;
+
+        if (data.Code == "00")
+        {
+            await _messagePublisher.PublishAsync(
+                new OrderInvoiceEmailRequested
+                {
+                    UserId = orderModel.UserId,
+                    OrderCode = orderModel.OrderCode,
+                    TotalAmount = orderModel.TotalAmount,
+                    CreatedAt = orderModel.CreatedAt,
+                    Items = orderModel.Items.Select(item => new OrderInvoiceItemMessage
+                    {
+                        ProductName = item.Name,
+                        Quantity = item.Quantity,
+                        Price = item.Price
+                    }).ToList()
+                },
+                cancellationToken);
+        }
 
         return Result<Unit>.Success(Unit.Value);
     }
