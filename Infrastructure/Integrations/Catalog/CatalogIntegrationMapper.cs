@@ -1,5 +1,6 @@
 using Platform.BuildingBlocks.Responses;
 using Platform.Catalog.Grpc;
+using Platform.Common.Grpc;
 using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.SharedKernel.Enums;
 
@@ -11,54 +12,46 @@ public static class CatalogIntegrationMapper
     {
         // Lỗi nghiệp vụ từ Catalog được trả theo contract gRPC
         // và được đổi ở đây sang IntegrationResult cho application layer.
-        if (!response.IsSuccess)
+        if (response.Status.IsFailure())
         {
-            return response.ErrorCode switch
-            {
-                CatalogErrorCodeGrpc.ProductNotFound => IntegrationResult<ProductCartSnapshot>.Failure(
-                    IntegrationErrorType.NotFound,
-                    response.ErrorMessage ?? "Product not found."),
-                CatalogErrorCodeGrpc.InvalidProductId => IntegrationResult<ProductCartSnapshot>.Failure(
-                    IntegrationErrorType.Unknown,
-                    response.ErrorMessage ?? "Invalid product id."),
-                _ => IntegrationResult<ProductCartSnapshot>.Failure(
-                    IntegrationErrorType.Unknown,
-                    response.ErrorMessage ?? "Catalog integration failed.")
-            };
+            var errorMessage = response.Status.GetFirstErrorOrDefault("Catalog integration failed.");
+            var errorType = string.Equals(errorMessage, "Product not found.", StringComparison.OrdinalIgnoreCase)
+                ? IntegrationErrorType.NotFound
+                : IntegrationErrorType.Unknown;
+
+            return IntegrationResult<ProductCartSnapshot>.Failure(errorType, errorMessage);
+        }
+
+        if (response.Data is null)
+        {
+            return IntegrationResult<ProductCartSnapshot>.Failure(
+                IntegrationErrorType.Unknown,
+                "Catalog integration returned empty data.");
         }
 
         return IntegrationResult<ProductCartSnapshot>.Success(new ProductCartSnapshot
         {
-            Id = Guid.Parse(response.Id),
-            Title = response.Title,
-            Price = response.Price,
-            Type = response.Kind == ProductKindGrpc.Physical
+            Id = Guid.Parse(response.Data.Id),
+            Title = response.Data.Title,
+            Price = response.Data.Price,
+            Type = response.Data.Kind == ProductKindGrpc.Physical
                 ? ProductKind.PhysicalProduct
                 : ProductKind.DigitalProduct,
-            IsActive = response.IsActive,
-            Stock = response.HasStock ? response.Stock : null
+            IsActive = response.Data.IsActive,
+            Stock = response.Data.HasStock ? response.Data.Stock : null
         });
     }
 
     public static IntegrationResult<bool> ToAdjustStockResult(this AdjustStockResponse response)
     {
-        if (!response.IsSuccess)
+        if (response.Status.IsFailure())
         {
-            return response.ErrorCode switch
-            {
-                CatalogErrorCodeGrpc.ProductNotFound => IntegrationResult<bool>.Failure(
-                    IntegrationErrorType.NotFound,
-                    response.ErrorMessage ?? "Product not found."),
-                CatalogErrorCodeGrpc.InvalidQuantity => IntegrationResult<bool>.Failure(
-                    IntegrationErrorType.Unknown,
-                    response.ErrorMessage ?? "Invalid quantity."),
-                CatalogErrorCodeGrpc.InsufficientStock => IntegrationResult<bool>.Failure(
-                    IntegrationErrorType.Unknown,
-                    response.ErrorMessage ?? "Not enough stock available."),
-                _ => IntegrationResult<bool>.Failure(
-                    IntegrationErrorType.Unknown,
-                    response.ErrorMessage ?? "Catalog integration failed.")
-            };
+            var errorMessage = response.Status.GetFirstErrorOrDefault("Catalog integration failed.");
+            var errorType = string.Equals(errorMessage, "Product not found.", StringComparison.OrdinalIgnoreCase)
+                ? IntegrationErrorType.NotFound
+                : IntegrationErrorType.Unknown;
+
+            return IntegrationResult<bool>.Failure(errorType, errorMessage);
         }
 
         return IntegrationResult<bool>.Success(true);

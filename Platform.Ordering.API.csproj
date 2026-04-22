@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\catalog_integration.proto" GrpcServices="Client" />
+    <Protobuf Include="Protos\catalog_integration.proto" GrpcServices="Client" AdditionalImportDirs="..\Platform.Contracts\Protos" />
   </ItemGroup>
 
   <ItemGroup>
