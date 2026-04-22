@@ -3,10 +3,11 @@ using Microsoft.Extensions.Options;
 using Platform.Catalog.Grpc;
 using Platform.Infrastructure.Data;
 using Platform.Infrastructure.DependencyInjection;
+using Platform.Messaging.DependencyInjection;
 using Platform.Ordering.API.Application.Abstractions.Payments;
+using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Ordering.API.Infrastructure.Configurations;
 using Platform.Ordering.API.Infrastructure.Constants;
-using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Ordering.API.Infrastructure.Data;
 using Platform.Ordering.API.Infrastructure.Integrations.Catalog;
 using Platform.Ordering.API.Infrastructure.Services;
@@ -44,6 +45,7 @@ public static class DependencyInjection
                     : catalogOptions.Address);
         });
         services.AddScoped<ICatalogClient, CatalogClient>();
+        services.AddPlatformRabbitMqMessaging(configuration);
         services.AddScoped<IPaymentService, PayOSService>();
         services.AddOptions<PayOSClientOptions>()
             .Bind(configuration.GetSection(ConfigurationSections.PayOS))

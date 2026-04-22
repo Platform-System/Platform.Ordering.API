@@ -25,7 +25,9 @@
     <ProjectReference Include="..\Platform.Application\Platform.Application.csproj" />
     <ProjectReference Include="..\Platform.Domain\Platform.Domain.csproj" />
     <ProjectReference Include="..\Platform.BuildingBlocks\Platform.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\Platform.Contracts\Platform.Contracts.csproj" />
     <ProjectReference Include="..\Platform.Infrastructure\Platform.Infrastructure.csproj" />
+    <ProjectReference Include="..\Platform.Messaging\Platform.Messaging.csproj" />
     <ProjectReference Include="..\Platform.SharedKernel\Platform.SharedKernel.csproj" />
     <ProjectReference Include="..\Platform.SystemContext\Platform.SystemContext.csproj" />
   </ItemGroup>
