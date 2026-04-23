@@ -17,10 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\catalog_integration.proto" GrpcServices="Client" AdditionalImportDirs="..\Platform.Contracts\Protos" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Platform.Api\Platform.Api.csproj" />
     <ProjectReference Include="..\Platform.Application\Platform.Application.csproj" />
     <ProjectReference Include="..\Platform.Domain\Platform.Domain.csproj" />
