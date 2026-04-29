@@ -1,6 +1,5 @@
 using Platform.Domain.Common;
 using Platform.Ordering.API.Domain.Errors;
-using Platform.SharedKernel.Enums;
 
 namespace Platform.Ordering.API.Domain.Entities;
 
@@ -8,7 +7,6 @@ public sealed class CartItem : Entity
 {
     public Guid CartId { get; private set; }
     public Guid ProductId { get; private set; }
-    public ProductKind Type { get; private set; }
     public string Name { get; private set; } = null!;
     public long Price { get; private set; }
     public int Quantity { get; private set; }
@@ -17,7 +15,7 @@ public sealed class CartItem : Entity
     {
     }
 
-    public DomainResult Initialize(Guid cartId, Guid productId, ProductKind type, string name, long price, int quantity)
+    public DomainResult Initialize(Guid cartId, Guid productId, string name, long price, int quantity)
     {
         if (string.IsNullOrWhiteSpace(name))
             return DomainResult.Failure(OrderingErrors.Cart.InvalidItemName);
@@ -30,7 +28,6 @@ public sealed class CartItem : Entity
 
         CartId = cartId;
         ProductId = productId;
-        Type = type;
         Name = name;
         Price = price;
         Quantity = quantity;
@@ -55,10 +52,10 @@ public sealed class CartItem : Entity
         return DomainResult.Success();
     }
 
-    public static DomainResult<CartItem> Create(Guid cartId, Guid productId, ProductKind type, string name, long price, int quantity)
+    public static DomainResult<CartItem> Create(Guid cartId, Guid productId, string name, long price, int quantity)
     {
         var item = new CartItem();
-        var result = item.Initialize(cartId, productId, type, name, price, quantity);
+        var result = item.Initialize(cartId, productId, name, price, quantity);
         return result.IsFailure
             ? DomainResult<CartItem>.Failure(result.Error)
             : DomainResult<CartItem>.Success(item);

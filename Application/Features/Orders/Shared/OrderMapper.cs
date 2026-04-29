@@ -20,7 +20,6 @@ public static class OrderMapper
             {
                 Id = item.Id,
                 ProductId = item.ProductId,
-                Type = item.Type,
                 Name = item.Name,
                 Price = item.Price,
                 Quantity = item.Quantity
@@ -40,7 +39,7 @@ public static class OrderMapper
 
         foreach (var item in model.Items.Select(ToDomain))
         {
-            var addItemResult = order.AddItem(item.ProductId, item.Type, item.Name, item.Price, item.Quantity);
+            var addItemResult = order.AddItem(item.ProductId, item.Name, item.Price, item.Quantity);
             if (addItemResult.IsSuccess)
             {
                 var domainItem = order.Items.Last();
@@ -53,7 +52,7 @@ public static class OrderMapper
 
     public static OrderItem ToDomain(this OrderItemModel model)
     {
-        var item = new OrderItem(model.OrderId, model.ProductId, model.Type, model.Name, model.Price, model.Quantity)
+        var item = new OrderItem(model.OrderId, model.ProductId, model.Name, model.Price, model.Quantity)
         {
             Id = model.Id
         };
@@ -95,7 +94,6 @@ public static class OrderMapper
             Id = item.Id,
             OrderId = item.OrderId,
             ProductId = item.ProductId,
-            Type = item.Type,
             Name = item.Name,
             Price = item.Price,
             Quantity = item.Quantity

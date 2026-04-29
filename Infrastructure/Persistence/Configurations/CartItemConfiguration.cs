@@ -16,9 +16,6 @@ public sealed class CartItemConfiguration : IEntityTypeConfiguration<CartItemMod
         builder.Property(x => x.ProductId)
             .IsRequired();
 
-        builder.Property(x => x.Type)
-            .IsRequired();
-
         builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(250);
@@ -29,7 +26,7 @@ public sealed class CartItemConfiguration : IEntityTypeConfiguration<CartItemMod
         builder.Property(x => x.Quantity)
             .IsRequired();
 
-        builder.HasIndex(x => new { x.CartId, x.ProductId, x.Type });
+        builder.HasIndex(x => new { x.CartId, x.ProductId });
 
         builder.HasOne(x => x.Cart)
             .WithMany(x => x.Items)

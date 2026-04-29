@@ -1,6 +1,5 @@
 using Platform.Domain.Common;
 using Platform.Ordering.API.Domain.Errors;
-using Platform.SharedKernel.Enums;
 
 namespace Platform.Ordering.API.Domain.Entities;
 
@@ -20,16 +19,16 @@ public sealed class Cart : AggregateRoot
         UserId = userId;
     }
 
-    public DomainResult AddItem(Guid productId, ProductKind type, string name, long price, int quantity)
+    public DomainResult AddItem(Guid productId, string name, long price, int quantity)
     {
-        var existingItem = Items.FirstOrDefault(x => x.ProductId == productId && x.Type == type);
+        var existingItem = Items.FirstOrDefault(x => x.ProductId == productId);
 
         if (existingItem is not null)
         {
             return existingItem.IncreaseQuantity(quantity);
         }
 
-        var itemResult = CartItem.Create(Id, productId, type, name, price, quantity);
+        var itemResult = CartItem.Create(Id, productId, name, price, quantity);
         if (itemResult.IsFailure)
             return DomainResult.Failure(itemResult.Error);
 
@@ -42,7 +41,7 @@ public sealed class Cart : AggregateRoot
         if (item.CartId != Id)
             return DomainResult.Failure(OrderingErrors.Cart.ItemDoesNotBelongToCart);
 
-        var existingItem = Items.FirstOrDefault(x => x.ProductId == item.ProductId && x.Type == item.Type);
+        var existingItem = Items.FirstOrDefault(x => x.ProductId == item.ProductId);
         if (existingItem is not null)
         {
             return existingItem.IncreaseQuantity(item.Quantity);
@@ -52,18 +51,18 @@ public sealed class Cart : AggregateRoot
         return DomainResult.Success();
     }
 
-    public DomainResult UpdateItem(Guid productId, ProductKind type, int quantity)
+    public DomainResult UpdateItem(Guid productId, int quantity)
     {
-        var item = Items.FirstOrDefault(x => x.ProductId == productId && x.Type == type);
+        var item = Items.FirstOrDefault(x => x.ProductId == productId);
         if (item is null)
             return DomainResult.Failure(OrderingErrors.Cart.ItemNotFound);
 
         return item.UpdateQuantity(quantity);
     }
 
-    public DomainResult RemoveItem(Guid productId, ProductKind type)
+    public DomainResult RemoveItem(Guid productId)
     {
-        var item = Items.FirstOrDefault(x => x.ProductId == productId && x.Type == type);
+        var item = Items.FirstOrDefault(x => x.ProductId == productId);
         if (item is null)
             return DomainResult.Failure(OrderingErrors.Cart.ItemNotFound);
 

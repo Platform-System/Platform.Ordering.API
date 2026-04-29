@@ -39,7 +39,7 @@ public sealed class RemoveCartItemHandler : ICommandHandler<RemoveCartItemComman
         if (existingItem is null)
             return Result<CartResponse>.Failure("Item not found in cart.");
 
-        var removeResult = cart.RemoveItem(existingItem.ProductId, existingItem.Type);
+        var removeResult = cart.RemoveItem(existingItem.ProductId);
         if (removeResult.IsFailure)
             return Result<CartResponse>.Failure("Unable to remove item from cart.");
 

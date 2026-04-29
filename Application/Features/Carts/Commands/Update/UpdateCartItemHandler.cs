@@ -4,7 +4,6 @@ using Platform.BuildingBlocks.Responses;
 using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Ordering.API.Application.Features.Carts.Shared;
 using Platform.Ordering.API.Infrastructure.Persistence.Models;
-using Platform.SharedKernel.Enums;
 using Platform.SystemContext.Abstractions;
 
 namespace Platform.Ordering.API.Application.Features.Carts.Commands.Update;
@@ -48,7 +47,7 @@ public sealed class UpdateCartItemHandler : ICommandHandler<UpdateCartItemComman
 
         if (command.Request.NewQuantity == 0)
         {
-            var removeResult = cart.RemoveItem(existingItem.ProductId, existingItem.Type);
+            var removeResult = cart.RemoveItem(existingItem.ProductId);
             if (removeResult.IsFailure)
                 return Result<CartResponse>.Failure("Unable to remove item from cart.");
 
@@ -73,13 +72,10 @@ public sealed class UpdateCartItemHandler : ICommandHandler<UpdateCartItemComman
         if (product is null || !product.IsActive)
             return Result<CartResponse>.Failure("Product not found.");
 
-        if (product.Type == ProductKind.DigitalProduct && command.Request.NewQuantity > 1)
-            return Result<CartResponse>.Failure("Cannot have more than 1 quantity of a digital product.");
-
         if (product.Stock.HasValue && command.Request.NewQuantity > product.Stock.Value)
             return Result<CartResponse>.Failure("Not enough stock available.");
 
-        var updateResult = cart.UpdateItem(product.Id, product.Type, command.Request.NewQuantity);
+        var updateResult = cart.UpdateItem(product.Id, command.Request.NewQuantity);
         if (updateResult.IsFailure)
             return Result<CartResponse>.Failure("Unable to update cart item.");
 

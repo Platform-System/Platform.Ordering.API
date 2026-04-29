@@ -2,7 +2,6 @@ using Platform.BuildingBlocks.DateTimes;
 using Platform.Domain.Common;
 using Platform.Ordering.API.Domain.Errors;
 using Platform.Ordering.API.Domain.Enums;
-using Platform.SharedKernel.Enums;
 
 namespace Platform.Ordering.API.Domain.Entities;
 
@@ -45,7 +44,7 @@ public sealed class Order : AggregateRoot
         };
     }
 
-    public DomainResult AddItem(Guid productId, ProductKind type, string name, long price, int quantity)
+    public DomainResult AddItem(Guid productId, string name, long price, int quantity)
     {
         if (string.IsNullOrWhiteSpace(name))
             return DomainResult.Failure(OrderingErrors.Order.InvalidItemName);
@@ -56,14 +55,14 @@ public sealed class Order : AggregateRoot
         if (quantity <= 0)
             return DomainResult.Failure(OrderingErrors.Order.InvalidItemQuantity);
 
-        var existingItem = Items.FirstOrDefault(x => x.ProductId == productId && x.Type == type);
+        var existingItem = Items.FirstOrDefault(x => x.ProductId == productId);
         if (existingItem is not null)
         {
             existingItem.IncreaseQuantity(quantity);
         }
         else
         {
-            _items.Add(new OrderItem(Id, productId, type, name, price, quantity));
+            _items.Add(new OrderItem(Id, productId, name, price, quantity));
         }
 
         TotalAmount = GetTotalAmount();

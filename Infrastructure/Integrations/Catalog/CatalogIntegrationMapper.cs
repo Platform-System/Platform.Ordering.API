@@ -2,7 +2,6 @@ using Platform.BuildingBlocks.Responses;
 using Platform.Catalog.Grpc;
 using Platform.Common.Grpc;
 using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
-using Platform.SharedKernel.Enums;
 
 namespace Platform.Ordering.API.Infrastructure.Integrations.Catalog;
 
@@ -34,11 +33,8 @@ public static class CatalogIntegrationMapper
             Id = Guid.Parse(response.Data.Id),
             Title = response.Data.Title,
             Price = response.Data.Price,
-            Type = response.Data.Kind == ProductKindGrpc.Physical
-                ? ProductKind.PhysicalProduct
-                : ProductKind.DigitalProduct,
             IsActive = response.Data.IsActive,
-            Stock = response.Data.HasStock ? response.Data.Stock : null
+            Stock = response.Data.Stock
         });
     }
 

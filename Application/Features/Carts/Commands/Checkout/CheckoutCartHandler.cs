@@ -73,7 +73,7 @@ public sealed class CheckoutCartHandler : ICommandHandler<CheckoutCartCommand, O
         // từ dữ liệu cart hiện tại và lưu vào OrderingDb.
         foreach (var cartItem in cart.Items)
         {
-            var addItemResult = order.AddItem(cartItem.ProductId, cartItem.Type, cartItem.Name, cartItem.Price, cartItem.Quantity);
+            var addItemResult = order.AddItem(cartItem.ProductId, cartItem.Name, cartItem.Price, cartItem.Quantity);
             if (addItemResult.IsFailure)
                 return Result<OrderResponse>.Failure("Unable to create order item.");
         }

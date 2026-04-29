@@ -15,7 +15,6 @@ public static class CartMapper
             {
                 Id = item.Id,
                 ProductId = item.ProductId,
-                Type = item.Type,
                 Name = item.Name,
                 Price = item.Price,
                 Quantity = item.Quantity
@@ -41,7 +40,7 @@ public static class CartMapper
 
     public static CartItem ToDomain(this CartItemModel model)
     {
-        var itemResult = CartItem.Create(model.CartId, model.ProductId, model.Type, model.Name, model.Price, model.Quantity);
+        var itemResult = CartItem.Create(model.CartId, model.ProductId, model.Name, model.Price, model.Quantity);
         var item = itemResult.Value;
         item.Id = model.Id;
         return item;
@@ -79,7 +78,6 @@ public static class CartMapper
             {
                 existingModelItem.CartId = domainItem.CartId;
                 existingModelItem.ProductId = domainItem.ProductId;
-                existingModelItem.Type = domainItem.Type;
                 existingModelItem.Name = domainItem.Name;
                 existingModelItem.Price = domainItem.Price;
                 existingModelItem.Quantity = domainItem.Quantity;
@@ -97,7 +95,6 @@ public static class CartMapper
             Id = item.Id,
             CartId = item.CartId,
             ProductId = item.ProductId,
-            Type = item.Type,
             Name = item.Name,
             Price = item.Price,
             Quantity = item.Quantity

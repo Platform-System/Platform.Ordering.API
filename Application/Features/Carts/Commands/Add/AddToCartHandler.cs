@@ -5,7 +5,6 @@ using Platform.Ordering.API.Application.Abstractions.Integrations.Catalog;
 using Platform.Ordering.API.Application.Features.Carts.Shared;
 using Platform.Ordering.API.Domain.Entities;
 using Platform.Ordering.API.Infrastructure.Persistence.Models;
-using Platform.SharedKernel.Enums;
 using Platform.SystemContext.Abstractions;
 
 namespace Platform.Ordering.API.Application.Features.Carts.Commands.Add;
@@ -64,25 +63,19 @@ public sealed class AddToCartHandler : ICommandHandler<AddToCartCommand, CartRes
         // trong Ordering trước khi lưu lại vào OrderingDb.
         if (existingItem is not null)
         {
-            if (product.Type == ProductKind.DigitalProduct)
-                return Result<CartResponse>.Failure("Cannot add multiple quantities of a digital product.");
-
             if (product.Stock.HasValue && existingItem.Quantity + command.Request.Quantity > product.Stock.Value)
                 return Result<CartResponse>.Failure("Not enough stock available.");
 
-            var addItemResult = cart.AddItem(product.Id, product.Type, product.Title, product.Price, command.Request.Quantity);
+            var addItemResult = cart.AddItem(product.Id, product.Title, product.Price, command.Request.Quantity);
             if (addItemResult.IsFailure)
                 return Result<CartResponse>.Failure("Unable to add item to cart.");
         }
         else
         {
-            if (product.Type == ProductKind.DigitalProduct && command.Request.Quantity > 1)
-                return Result<CartResponse>.Failure("Quantity must be 1 for digital products.");
-
             if (product.Stock.HasValue && command.Request.Quantity > product.Stock.Value)
                 return Result<CartResponse>.Failure("Not enough stock available.");
 
-            var addItemResult = cart.AddItem(product.Id, product.Type, product.Title, product.Price, command.Request.Quantity);
+            var addItemResult = cart.AddItem(product.Id, product.Title, product.Price, command.Request.Quantity);
             if (addItemResult.IsFailure)
                 return Result<CartResponse>.Failure("Unable to add item to cart.");
         }
